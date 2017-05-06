@@ -130,7 +130,7 @@ export class HomePage {
 
   private showHeight() {
     this.helpOptions.height = true;
-    this.showToast("His/Her height is " + this.persons[this.personToGuessIndex].height);
+    this.showToast("His/Her height is " + this.persons[this.personToGuessIndex].height + "cm");
   }
 
   private showHomeWorld(json) {
@@ -140,7 +140,7 @@ export class HomePage {
 
   private showMass() {
     this.helpOptions.mass = true;
-    this.showToast("His/Her mass is " + this.persons[this.personToGuessIndex].mass);
+    this.showToast("His/Her mass is " + this.persons[this.personToGuessIndex].mass + "kg");
   }
 
   private showSkinColor() {
@@ -149,7 +149,7 @@ export class HomePage {
   }
 
   private showSpecie(json) {
-    this.showToast("His/Her home world is " + json.name);
+    this.showToast("His/Her specie is " + json.name);
   }
 
   private showStarship(json) {
@@ -166,5 +166,14 @@ export class HomePage {
       duration: 2000,
       position: 'bottom'
     }).present();
+  }
+
+  private nameClicked(person: Person) {
+    if (this.persons.indexOf(person) == this.personToGuessIndex) {
+      this.showToast("CORRECT");
+    }
+    else {
+      this.showToast("INCORRECT");
+    }
   }
 }
