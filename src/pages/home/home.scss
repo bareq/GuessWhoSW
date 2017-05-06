@@ -2,4 +2,7 @@ page-home {
   #question-icon {
     color: map-get($colors, star-warsish);
   }
+  p {
+    text-align: center;
+  }
 }

@@ -5,13 +5,16 @@
     </ion-title>
   </ion-navbar>
 </ion-header>
+<ion-content>
 
-<ion-content padding>
-  <ion-list #list>
-    <p *ngFor="let person of persons">
+  <p>TRY TO GUESS OR CLICK <b>?</b> FOR TIPS</p>
+
+  <ion-card *ngFor="let person of persons" (click)="nameClicked(person)">
+    <ion-card-content>
       {{person.name}}
-    </p>
-  </ion-list>
+    </ion-card-content>
+
+  </ion-card>
 
   <ion-fab right bottom (click)="giveMeHelp()">
     <button ion-fab color="title-background">

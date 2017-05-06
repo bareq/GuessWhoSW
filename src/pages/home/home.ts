@@ -1,5 +1,5 @@
 import {Component} from "@angular/core";
-import {NavController, ToastController} from "ionic-angular";
+import {NavController, PopoverController, ToastController} from "ionic-angular";
 import {PersonService} from "../../person/service/personService";
 import {Person} from "../../person/model/person";
 import {HelpOptions} from "../../help/model/helpOptions";
@@ -8,6 +8,7 @@ import {PlanetService} from "../../planet/service/planetService";
 import {SpecieService} from "../../specie/service/specieService";
 import {StarshipService} from "../../starship/service/starshipService";
 import {VehicleService} from "../../vehicle/service/vehicleService";
+import {FailureDialog, SuccessDialog} from "./widget/resultDialog";
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
@@ -17,28 +18,38 @@ export class HomePage {
   private persons = [];
   private personToGuessIndex: number;
   private helpOptions: HelpOptions;
+  private randomizedNumbers;
 
-  constructor(public navCtrl: NavController, private personService: PersonService, private filmService: FilmService, private planetService: PlanetService, private specieService: SpecieService, private starshipService: StarshipService, private vehicleService: VehicleService, private toastCtrl: ToastController) {
+  constructor(public navCtrl: NavController, private personService: PersonService, private filmService: FilmService, private planetService: PlanetService, private specieService: SpecieService, private starshipService: StarshipService, private vehicleService: VehicleService, private toastCtrl: ToastController, private popoverController: PopoverController) {
   }
 
   ionViewDidLoad() {
+    this.startNewGame();
+  }
+
+  public startNewGame() {
+    this.persons = [];
+    this.randomizedNumbers = [];
     this.getPersonCount();
   }
 
-  private loadPersonsData(maxIndex: number) {
-    let randomizedNumbers = [];
-    this.persons = [];
+  private loadPersonsData(maxIndex: number, count: number) {
     this.personToGuessIndex = this.randomPersonIndex(this.personCount) - 1;
     this.helpOptions = new HelpOptions();
-    for (let i = 0; i < this.personCount; i++) {
+    for (let i = 0; i < count; i++) {
       let random = this.randomPersonIndex(maxIndex);
-      while (randomizedNumbers.indexOf(random) > -1) {
+      while (this.randomizedNumbers.indexOf(random) > -1) {
         random = this.randomPersonIndex(maxIndex);
       }
-      randomizedNumbers.push(random);
+      this.randomizedNumbers.push(random);
       this.personService.loadPerson(random)
-        .subscribe(response => this.addToPersons(response.json()), error => this.loadPersonsData(maxIndex));
+        .subscribe(response => this.addToPersons(response.json()), error => this.replacePerson(maxIndex, random));
     }
+  }
+
+  private replacePerson(maxIndex: number, random: number) {
+    this.randomizedNumbers.pop(random);
+    this.loadPersonsData(maxIndex, 1);
   }
 
   private randomPersonIndex(maxIndex: number): number {
@@ -52,7 +63,7 @@ export class HomePage {
 
   private getPersonCount() {
     this.personService.getPersonsCount()
-      .subscribe(response => this.loadPersonsData(response.json().count));
+      .subscribe(response => this.loadPersonsData(response.json().count, this.personCount));
   }
 
   private giveMeHelp() {
@@ -65,7 +76,7 @@ export class HomePage {
     if (!this.helpOptions.films) {
       this.helpOptions.films = true;
       return this.filmService.getFilm(this.persons[this.personToGuessIndex].films[0])
-        .subscribe(response => this.showFilmTitle(response.json()));
+        .subscribe(response => this.showFilmTitle(response.json()), error => this.giveMeHelp());
     }
     if (!this.helpOptions.gender) {
       return this.showGender();
@@ -78,7 +89,7 @@ export class HomePage {
     }
     if (!this.helpOptions.homeworld) {
       return this.planetService.getPlanet(this.persons[this.personToGuessIndex].homeworld)
-        .subscribe(response => this.showHomeWorld(response.json()));
+        .subscribe(response => this.showHomeWorld(response.json()), error => this.giveMeHelp());
     }
     if (!this.helpOptions.mass) {
       return this.showMass();
@@ -89,17 +100,17 @@ export class HomePage {
     if (!this.helpOptions.species) {
       this.helpOptions.species = true;
       return this.specieService.getSpecie(this.persons[this.personToGuessIndex].species[0])
-        .subscribe(response => this.showSpecie(response.json()));
+        .subscribe(response => this.showSpecie(response.json()), error => this.giveMeHelp());
     }
     if (!this.helpOptions.starships) {
       this.helpOptions.starships = true;
       return this.starshipService.getStarship(this.persons[this.personToGuessIndex].starships[0])
-        .subscribe(response => this.showStarship(response.json()));
+        .subscribe(response => this.showStarship(response.json()), error => this.giveMeHelp());
     }
     if (!this.helpOptions.vehicles) {
       this.helpOptions.vehicles = true;
       return this.vehicleService.getVehicle(this.persons[this.personToGuessIndex].vehicles[0])
-        .subscribe(response => this.showVehicle(response.json()));
+        .subscribe(response => this.showVehicle(response.json()), error => this.giveMeHelp());
     }
     return this.showToast("There is no more tips, guess :)");
   }
@@ -130,7 +141,7 @@ export class HomePage {
 
   private showHeight() {
     this.helpOptions.height = true;
-    this.showToast("His/Her height is " + this.persons[this.personToGuessIndex].height);
+    this.showToast("His/Her height is " + this.persons[this.personToGuessIndex].height + "cm");
   }
 
   private showHomeWorld(json) {
@@ -140,7 +151,7 @@ export class HomePage {
 
   private showMass() {
     this.helpOptions.mass = true;
-    this.showToast("His/Her mass is " + this.persons[this.personToGuessIndex].mass);
+    this.showToast("His/Her mass is " + this.persons[this.personToGuessIndex].mass + "kg");
   }
 
   private showSkinColor() {
@@ -149,7 +160,7 @@ export class HomePage {
   }
 
   private showSpecie(json) {
-    this.showToast("His/Her home world is " + json.name);
+    this.showToast("His/Her specie is " + json.name);
   }
 
   private showStarship(json) {
@@ -166,5 +177,17 @@ export class HomePage {
       duration: 2000,
       position: 'bottom'
     }).present();
+  }
+
+  private nameClicked(person: Person) {
+    if (this.persons.indexOf(person) == this.personToGuessIndex) {
+      this.popoverController.create(SuccessDialog, {homePages: this}).present();
+    }
+    else {
+      this.popoverController.create(FailureDialog, {
+        correctAnswer: this.persons[this.personToGuessIndex].name,
+        homePages: this
+      }).present();
+    }
   }
 }
