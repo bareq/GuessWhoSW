@@ -12,10 +12,13 @@ import {PlanetService} from "../planet/service/planetService";
 import {VehicleService} from "../vehicle/service/vehicleService";
 import {SpecieService} from "../specie/service/specieService";
 import {StarshipService} from "../starship/service/starshipService";
+import {FailureDialog, SuccessDialog} from "../pages/home/widget/resultDialog";
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
+    SuccessDialog,
+    FailureDialog
   ],
   imports: [
     BrowserModule,
@@ -25,7 +28,9 @@ import {StarshipService} from "../starship/service/starshipService";
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HomePage
+    HomePage,
+    SuccessDialog,
+    FailureDialog
   ],
   providers: [
     StatusBar,
