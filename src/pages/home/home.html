@@ -1,14 +1,24 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      Ionic Blank
+      Guess Who: Star Wars
     </ion-title>
   </ion-navbar>
 </ion-header>
+<ion-content>
 
-<ion-content padding>
-  The world is your oyster.
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
-  </p>
+  <p>TRY TO GUESS OR CLICK <b>?</b> FOR TIPS</p>
+
+  <ion-card *ngFor="let person of persons" (click)="nameClicked(person)">
+    <ion-card-content>
+      {{person.name}}
+    </ion-card-content>
+
+  </ion-card>
+
+  <ion-fab right bottom (click)="giveMeHelp()">
+    <button ion-fab color="title-background">
+      <ion-icon name="help" id="question-icon"></ion-icon>
+    </button>
+  </ion-fab>
 </ion-content>
